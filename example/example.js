@@ -50,30 +50,17 @@ var onSteamLogOn = function onSteamLogOn(response){
                 util.log("Servers Online: " + matchmakingStatsResponse.global_stats.servers_online);
                 util.log("Servers Available: " + matchmakingStatsResponse.global_stats.servers_available);
                 util.log("Matches in Progress: " + matchmakingStatsResponse.global_stats.ongoing_matches);
-                console.log(JSON.stringify(matchmakingStatsResponse, null, 4));
-
-                CSGO.playerProfileRequest(CSGO.ToAccountID(bot.steamID)); //
-                CSGO.on("playerProfile", function(profile) {
-                   console.log("Profile");
-                   console.log(JSON.stringify(profile, null, 2));
-                });
-
-                CSGO.requestRecentGames(CSGO.ToAccountID(bot.steamID));
-                CSGO.on("matchList", function(list) {
-                   console.log("Match List");
-                   console.log(JSON.stringify(list, null, 2));
-                });
-                
-                CSGO.richPresenceUpload({
-                    RP: {
-                        status: "Hello World!", // Sets rich presence text to "Hello World!"
-                        version: 13503, // Not sure what this value does
-                        time: 161.164087 // This might be the amount of time since you have started the game, not sure.
-                    }
-                });
-            });
+                //console.log(JSON.stringify(matchmakingStatsResponse, null, 4));
+			});
+				
+			CSGO.econItemRequest("718680879068109333", "3715100641", "9973371742294960087");
+		
+			CSGO.on("EconItemInfo", function onItemInfo(EconItemInfoResponse){
+				util.log(JSON.stringify(EconItemInfoResponse, null, 4));
+			});
+			
         });
-
+		
         CSGO.on("unready", function onUnready(){
             util.log("node-csgo unready.");
         });
@@ -81,6 +68,7 @@ var onSteamLogOn = function onSteamLogOn(response){
         CSGO.on("unhandled", function(kMsg) {
             util.log("UNHANDLED MESSAGE " + kMsg);
         });
+		
     },
     onSteamSentry = function onSteamSentry(sentry) {
         util.log("Received sentry.");

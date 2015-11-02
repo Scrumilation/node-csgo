@@ -1,5 +1,6 @@
 var CSGO = require("../index"),
     util = require("util"),
+	Long = require("long"),
     protos = require("../protos");
 
 CSGO.CSGOClient.prototype.matchmakingStatsRequest = function() {
@@ -17,6 +18,36 @@ CSGO.CSGOClient.prototype.matchmakingStatsRequest = function() {
   var payload = new protos.CMsgGCCStrike15_v2_MatchmakingClient2GCHello({});
   this._gc.send({msg:CSGO.ECSGOCMsg.k_EMsgGCCStrike15_v2_MatchmakingClient2GCHello, proto: {}},
       payload.toBuffer());
+};
+
+CSGO.CSGOClient.prototype.econItemRequest = function(m, a, d, callback){
+	callback = callback || null;
+	if(!this._gcReady){
+		if(this.debug){
+			util.log("GC not ready, please listen for the 'ready' event.");
+		}
+		return null;
+	}
+	
+	if(this.debug){
+		util.log("Sending econ item info request with values: " + "0 " + m + " " + a + " " + d);
+	}
+	
+	slong = Long.fromString("0", true);
+	along = Long.fromString(a, true);
+	dlong = Long.fromString(d, true);
+	mlong = Long.fromString(m, true);
+	
+	var payload = new protos.CMsgGCCStrike15_v2_Client2GCEconPreviewDataBlockRequest({
+		param_s: slong,
+		param_a: along,
+		param_d: dlong,
+		param_m: mlong
+	});
+	
+	this._gc.send({msg:CSGO.ECSGOCMsg.k_EMsgGCCStrike15_v2_Client2GCEconPreviewDataBlockRequest, proto: {}},
+	payload.toBuffer(), callback);
+
 };
 
 
@@ -163,10 +194,7 @@ CSGO.CSGOClient.prototype.richPresenceRequest = function(steamids, callback){
 CSGO.CSGOClient.prototype.richPresenceUpload = function(rp, steamids, callback){
   var payload = new protos.schema.CMsgClientRichPresenceUpload();
   payload.rich_presence_kv = require("../VDF").encode(rp);
-  if(this.debug){
-      util.log("Rich presence Payload:")
-      console.log(payload.rich_presence_kv);
-  }
+  console.log(payload.rich_presence_kv);
   if(steamids){
     payload.steamid_broadcast = steamids;
   }
@@ -180,6 +208,15 @@ CSGO.CSGOClient.prototype.richPresenceUpload = function(rp, steamids, callback){
 };
 
 var handlers = CSGO.CSGOClient.prototype._handlers;
+
+handlers[CSGO.ECSGOCMsg.k_EMsgGCCStrike15_v2_Client2GCEconPreviewDataBlockResponse] = function onEconItemInfoResponse2(message){
+	var EconItemInfoResponse = protos.CMsgGCCStrike15_v2_Client2GCEconPreviewDataBlockResponse.decode(message);
+	
+	if(this.debug){
+		util.log("Received econweapons stats")
+	}
+	this.emit("EconItemInfo", EconItemInfoResponse)
+}
 
 handlers[CSGO.ECSGOCMsg.k_EMsgGCCStrike15_v2_MatchmakingGC2ClientHello] = function onMatchmakingStatsResponse(message) {
   var matchmakingStatsResponse = protos.CMsgGCCStrike15_v2_MatchmakingGC2ClientHello.decode(message);
