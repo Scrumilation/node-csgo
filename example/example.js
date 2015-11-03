@@ -2,6 +2,8 @@ var Steam = require("steam"),
     util = require("util"),
     fs = require("fs"),
     csgo = require("../"),
+	readline = require('readline');
+
     bot = new Steam.SteamClient(),
     steamUser = new Steam.SteamUser(bot),
     steamFriends = new Steam.SteamFriends(bot),
@@ -16,6 +18,12 @@ function MakeSha(bytes) {
     return hash.digest();
 }
 
+//ayy lmao
+var lazyFunctionWithIncorrectStuffButWhyNot(annoyingFuckingUnsignedShit) {
+    buf = new Buffer(4);
+    buf.writeUInt32LE(+annoyingFuckingUnsignedShit, 0);
+    return buf.readFloatLE(0).toString()
+}
 
 var onSteamLogOn = function onSteamLogOn(response){
         if (response.eresult == Steam.EResult.OK) {
@@ -42,23 +50,21 @@ var onSteamLogOn = function onSteamLogOn(response){
         CSGO.on("ready", function() {
             util.log("node-csgo ready.");
 
-            CSGO.matchmakingStatsRequest();
-            CSGO.on("matchmakingStatsData", function(matchmakingStatsResponse) {
-                util.log("Avg. Wait Time: " + matchmakingStatsResponse.global_stats.search_time_avg);
-                util.log("Players Online: " + matchmakingStatsResponse.global_stats.players_online);
-                util.log("Players Searching: " + matchmakingStatsResponse.global_stats.players_searching);
-                util.log("Servers Online: " + matchmakingStatsResponse.global_stats.servers_online);
-                util.log("Servers Available: " + matchmakingStatsResponse.global_stats.servers_available);
-                util.log("Matches in Progress: " + matchmakingStatsResponse.global_stats.ongoing_matches);
-                //console.log(JSON.stringify(matchmakingStatsResponse, null, 4));
-			});
-				
-			CSGO.econItemRequest("718680879068109333", "3715100641", "9973371742294960087");
-		
 			CSGO.on("EconItemInfo", function onItemInfo(EconItemInfoResponse){
-				util.log(JSON.stringify(EconItemInfoResponse, null, 4));
+				var skin = JSON.parse(EconItemInfoResponse);
+				util.log(skin.itemid);
+				var wear = lazyFunctionWithIncorrectStuffButWhyNot(skin.paintwear);
+				util.log("Float: " + wear);
 			});
 			
+			var filename = "skins.txt"
+			readline.createInterface({
+				input: fs.createReadStream(filename),
+				terminal: false
+			}).on('line', function(line) {
+				var parameters = line.split();
+				CSGO.econItemRequest(parameters[0], parameters[1], parameters[2]);
+			});
         });
 		
         CSGO.on("unready", function onUnready(){
